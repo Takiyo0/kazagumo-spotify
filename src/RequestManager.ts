@@ -13,8 +13,6 @@ export class RequestManager {
     this.authorization = `Basic ${Buffer.from(`${this.options.clientId}:${this.options.clientSecret}`).toString(
       'base64',
     )}`;
-
-    this.renewToken();
   }
 
   public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
@@ -39,7 +37,7 @@ export class RequestManager {
   }
 
   private async renew(): Promise<void> {
-    if (this.nextRenew > Date.now()) {
+    if (this.nextRenew >= Date.now()) {
       await this.renewToken();
     }
   }
