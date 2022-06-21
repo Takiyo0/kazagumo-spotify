@@ -7,17 +7,20 @@ const BASE_URL = 'https://api.spotify.com/v1';
 export class RequestManager {
   private token: string = '';
   private authorization: string = '';
+  private nextRenew: number = 0;
 
   constructor(private options: SpotifyOptions) {
     this.authorization = `Basic ${Buffer.from(`${this.options.clientId}:${this.options.clientSecret}`).toString(
       'base64',
     )}`;
 
-    this.renew();
+    this.renewToken();
   }
 
-  public makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
-    return petitio(disableBaseUri ? endpoint : `${BASE_URL}${endpoint}`)
+  public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
+    await this.renew();
+
+    return await petitio(disableBaseUri ? endpoint : `${BASE_URL}${endpoint}`)
       .header('Authorization', this.token)
       .json();
   }
@@ -32,11 +35,12 @@ export class RequestManager {
     if (!access_token) throw new KazagumoError(3, 'Failed to get access token due to invalid spotify client');
 
     this.token = `Bearer ${access_token}`;
-    return expires_in * 1000;
+    this.nextRenew = expires_in * 1000;
   }
 
   private async renew(): Promise<void> {
-    const expires = await this.renewToken();
-    setTimeout(() => this.renew(), expires);
+    if (this.nextRenew > Date.now()) {
+      await this.renewToken();
+    }
   }
 }
