@@ -23,7 +23,7 @@ export class RequestManager {
       .json();
   }
 
-  private async renewToken(): Promise<number> {
+  private async renewToken(): Promise<void> {
     const { access_token, expires_in } = await petitio('https://accounts.spotify.com/api/token', 'POST')
       .query('grant_type', 'client_credentials')
       .header('Authorization', this.authorization)
