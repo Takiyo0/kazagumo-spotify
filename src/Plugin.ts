@@ -1,4 +1,3 @@
-import { Console } from 'console';
 import {
   KazagumoPlugin as Plugin,
   KazagumoSearchOptions,
@@ -23,6 +22,8 @@ export interface SpotifyOptions {
   albumPageLimit?: number;
   /** 50 tracks per page */
   artistPageLimit?: number;
+  /** The track limit when searching track */
+  searchLimit?: number;
 }
 
 export class KazagumoPlugin extends Plugin {
@@ -78,6 +79,10 @@ export class KazagumoPlugin extends Plugin {
       } catch (e) {
         return this.buildSearch(undefined, [], 'SEARCH');
       }
+    } else if (options?.engine === 'spotify') {
+      const result = await this.searchTrack(query, options?.requester);
+
+      return this.buildSearch(undefined, result.tracks, 'SEARCH');
     }
 
     return this._search(query, options);
@@ -92,6 +97,19 @@ export class KazagumoPlugin extends Plugin {
       playlistName,
       tracks,
       type: type ?? 'TRACK',
+    };
+  }
+
+  private async searchTrack(query: string, requester: unknown): Promise<Result> {
+    const limit =
+      this.options.searchLimit && this.options.searchLimit > 0 && this.options.searchLimit < 50
+        ? this.options.searchLimit
+        : 10;
+    const tracks = await this.requestManager.makeRequest<SearchResult>(
+      `/search?q=${decodeURIComponent(query)}&type=track&limit=${limit}`,
+    );
+    return {
+      tracks: tracks.tracks.items.map((track) => this.buildKazagumoTrack(track, requester)),
     };
   }
 
@@ -183,6 +201,10 @@ export class KazagumoPlugin extends Plugin {
       requester,
     );
   }
+}
+
+export interface SearchResult {
+  tracks: Tracks;
 }
 
 export interface Result {
