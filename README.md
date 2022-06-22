@@ -2,12 +2,14 @@
 
 ## A spotify plugin for kazagumo module
 
-## Accepted links
+## Accepted query
 
-Track; `https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`  
-Playlist; `https://open.spotify.com/playlist/2gzszlY4WeJOTOUU6x3sgA`  
-Album; `https://open.spotify.com/album/18UoCkfQKlMVnAcZXbiBz8`
-Artist; `https://open.spotify.com/artist/64tJ2EAv1R6UaZqc4iOCyj?si=mxc5IMM9RQeEPmY0KBIfjg`
+Track link; `https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`  
+Playlist link; `https://open.spotify.com/playlist/2gzszlY4WeJOTOUU6x3sgA`  
+Album link; `https://open.spotify.com/album/18UoCkfQKlMVnAcZXbiBz8`   
+Artist link; `https://open.spotify.com/artist/64tJ2EAv1R6UaZqc4iOCyj?si=mxc5IMM9RQeEPmY0KBIfjg`   
+String; `mirror heart`
+
 
 ## Installation
 
@@ -33,6 +35,7 @@ const kazagumo = new Kazagumo(
         playlistPageLimit: 1, // optional ( 100 tracks per page )
         albumPageLimit: 1, // optional ( 50 tracks per page )
         artistPageLimit: 1, // optional ( 50 tracks per page )
+        searchLimit: 10 // optional ( track search limit. Max 50 )
       }),
     ],
   },
@@ -40,5 +43,6 @@ const kazagumo = new Kazagumo(
   Nodes,
 );
 
-kazagumo.search(`https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`);
+kazagumo.search(`https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`); // track, album, playlist, artist
+kazagumo.search('mirror heart', {engine: 'spotify'}) // search track using spotify
 ```
