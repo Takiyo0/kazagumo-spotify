@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import {
   KazagumoPlugin as Plugin,
   KazagumoSearchOptions,
@@ -9,7 +10,7 @@ import {
 } from 'kazagumo';
 import { RequestManager } from './RequestManager';
 
-const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|album)[\/:]([A-Za-z0-9]+)/;
+const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|album|artist)[\/:]([A-Za-z0-9]+)/;
 
 export interface SpotifyOptions {
   /** The client ID of your Spotify application. */
@@ -20,6 +21,8 @@ export interface SpotifyOptions {
   playlistPageLimit?: number;
   /** 50 tracks per page */
   albumPageLimit?: number;
+  /** 50 tracks per page */
+  artistPageLimit?: number;
 }
 
 export class KazagumoPlugin extends Plugin {
@@ -43,6 +46,7 @@ export class KazagumoPlugin extends Plugin {
     this.methods = {
       track: this.getTrack.bind(this),
       album: this.getAlbum.bind(this),
+      artist: this.getArtist.bind(this),
       playlist: this.getPlaylist.bind(this),
     };
     this.kazagumo = null;
@@ -118,6 +122,18 @@ export class KazagumoPlugin extends Plugin {
     }
 
     return { tracks, name: album.name };
+  }
+
+  private async getArtist(id: string, requester: unknown): Promise<Result> {
+    const artist = await this.requestManager.makeRequest<Artist>(`/artists/${id}`);
+    const fetchedTracks = await this.requestManager.makeRequest<ArtistResult>(`/artists/${id}/top-tracks?market=US`);
+
+    const tracks = fetchedTracks.tracks
+      .slice(0, this.options.artistPageLimit ? this.options.artistPageLimit * 50 : 50)
+      .filter(this.filterNullOrUndefined)
+      .map((track) => this.buildKazagumoTrack(track, requester, artist.images[0]?.url));
+
+    return { tracks, name: artist.name };
   }
 
   private async getPlaylist(id: string, requester: unknown): Promise<Result> {
@@ -217,6 +233,10 @@ export interface AlbumResult {
   uri: string;
 }
 
+export interface ArtistResult {
+  tracks: Track[];
+}
+
 export interface PlaylistResult {
   collaborative: boolean;
   description: string;
@@ -248,7 +268,6 @@ export interface Followers {
   href: string | null;
   total: number;
 }
-
 export interface Tracks {
   href: string;
   items: Track[];
@@ -311,9 +330,16 @@ export interface Artist {
   external_urls: {
     spotify: string;
   };
+  followers: {
+    href: string;
+    total: number;
+  };
+  genres: [];
   href: string;
   id: string;
+  images: Image[];
   name: string;
+  popularity: number;
   type: string;
   uri: string;
 }
