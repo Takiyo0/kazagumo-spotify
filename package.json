@@ -1,6 +1,6 @@
 {
   "name": "kazagumo-spotify",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A spotify module for kazagumo",
   "main": "dist/Index.js",
   "types": "dist/Index.d.ts",
@@ -19,12 +19,13 @@
   },
   "keywords": [
     "spotify",
-    "spotify",
     "module",
     "kazagumo",
-    "kazagumo",
-    "spotify",
-    "module"
+    "kazagumo-plugin",
+    "kazagumo-plugin-spotify",
+    "kazagumo-spotify",
+    "plugin",
+    "spotify-plugin"
   ],
   "author": "Takiyo0",
   "license": "ISC",
