@@ -16,13 +16,15 @@ export class RequestManager {
   }
 
   public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
-    await this.renew();
+    if (Date.now() >= this.nextRenew) {
+      await this.renewToken();
+    }
 
     const request = await fetch(disableBaseUri ? endpoint : `${BASE_URL}${endpoint}`, {
       headers: { Authorization: this.token },
     });
-    const data = (await request.json()) as Promise<T>;
-    return data;
+    
+    return await request.json();
   }
 
   private async renewToken(): Promise<void> {
@@ -43,11 +45,5 @@ export class RequestManager {
 
     this.token = `Bearer ${access_token}`;
     this.nextRenew = expires_in * 1000;
-  }
-
-  private async renew(): Promise<void> {
-    if (Date.now() >= this.nextRenew) {
-      await this.renewToken();
-    }
   }
 }
