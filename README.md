@@ -34,8 +34,8 @@ const kazagumo = new Kazagumo(
         playlistPageLimit: 1, // optional ( 100 tracks per page )
         albumPageLimit: 1, // optional ( 50 tracks per page )
         artistPageLimit: 1, // optional ( 50 tracks per page )
-        searchLimit: 10 // optional ( track search limit. Max 50 )
-        searchMarket: 'US' // optional || default: ES ( Enter the country you live in. [ Can only be of 2 letters. For eg: US, IN, EN ] )//
+        searchLimit: 10, // optional ( track search limit. Max 50 )
+        searchMarket: 'US', // optional || default: ES ( Enter the country you live in. [ Can only be of 2 letters. For eg: US, IN, EN ] )//
       }),
     ],
   },
@@ -44,5 +44,5 @@ const kazagumo = new Kazagumo(
 );
 
 kazagumo.search(`https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`); // track, album, playlist, artist
-kazagumo.search('mirror heart', {engine: 'spotify'}) // search track using spotify
+kazagumo.search('mirror heart', { engine: 'spotify' }); // search track using spotify
 ```
