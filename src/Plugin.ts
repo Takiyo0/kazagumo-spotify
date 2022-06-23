@@ -24,6 +24,8 @@ export interface SpotifyOptions {
   artistPageLimit?: number;
   /** The track limit when searching track */
   searchLimit?: number;
+  /** Enter the country you live in. ( Can only be of 2 letters. For eg: US, IN, EN) */
+  searchMarket?: string;
 }
 
 export class KazagumoPlugin extends Plugin {
@@ -108,7 +110,7 @@ export class KazagumoPlugin extends Plugin {
         ? this.options.searchLimit
         : 10;
     const tracks = await this.requestManager.makeRequest<SearchResult>(
-      `/search?q=${decodeURIComponent(query)}&type=track&limit=${limit}`,
+      `/search?q=${decodeURIComponent(query)}&type=track&limit=${limit}&market=${this.options.searchMarket}`,
     );
     return {
       tracks: tracks.tracks.items.map((track) => this.buildKazagumoTrack(track, requester)),
