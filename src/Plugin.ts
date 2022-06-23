@@ -66,6 +66,8 @@ export class KazagumoPlugin extends Plugin {
     if (!query) throw new KazagumoError(3, 'Query is required');
     const [, type, id] = REGEX.exec(query) || [];
 
+    const isUrl = /^https?:\/\//.test(query);
+
     if (type in this.methods) {
       try {
         const _function = this.methods[type];
@@ -79,7 +81,7 @@ export class KazagumoPlugin extends Plugin {
       } catch (e) {
         return this.buildSearch(undefined, [], 'SEARCH');
       }
-    } else if (options?.engine === 'spotify') {
+    } else if (options?.engine === 'spotify' && !isUrl) {
       const result = await this.searchTrack(query, options?.requester);
 
       return this.buildSearch(undefined, result.tracks, 'SEARCH');
