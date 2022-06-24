@@ -110,7 +110,7 @@ export class KazagumoPlugin extends Plugin {
         ? this.options.searchLimit
         : 10;
     const tracks = await this.requestManager.makeRequest<SearchResult>(
-      `/search?q=${decodeURIComponent(query)}&type=track&limit=${limit}&market=${this.options.searchMarket}`,
+      `/search?q=${decodeURIComponent(query)}&type=track&limit=${limit}&market=${this.options.searchMarket ?? 'US'}`,
     );
     return {
       tracks: tracks.tracks.items.map((track) => this.buildKazagumoTrack(track, requester)),
