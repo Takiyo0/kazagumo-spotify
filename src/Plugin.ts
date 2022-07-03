@@ -20,8 +20,6 @@ export interface SpotifyOptions {
   playlistPageLimit?: number;
   /** 50 tracks per page */
   albumPageLimit?: number;
-  /** 50 tracks per page */
-  artistPageLimit?: number;
   /** The track limit when searching track */
   searchLimit?: number;
   /** Enter the country you live in. ( Can only be of 2 letters. For eg: US, IN, EN) */
@@ -123,24 +121,29 @@ export class KazagumoPlugin extends Plugin {
   }
 
   private async getAlbum(id: string, requester: unknown): Promise<Result> {
-    const album = await this.requestManager.makeRequest<AlbumResult>(`/albums/${id}`);
+    const album = await this.requestManager.makeRequest<AlbumResult>(
+      `/albums/${id}?market=${this.options.searchMarket ?? 'US'}`,
+    );
     const tracks = album.tracks.items
       .filter(this.filterNullOrUndefined)
       .map((track) => this.buildKazagumoTrack(track, requester, album.images[0]?.url));
-    // tslint:disable:one-variable-per-declaration
-    let next = album.tracks.next,
-      page = 1;
 
-    while (next && !this.options.albumPageLimit ? true : page < (this.options.albumPageLimit ?? 1)) {
-      if (!next) break;
-      const nextTracks = await this.requestManager.makeRequest<Tracks>(next);
-      tracks.push(
-        ...nextTracks.items
-          .filter(this.filterNullOrUndefined)
-          .map((track) => this.buildKazagumoTrack(track, requester, album.images[0]?.url)),
-      );
-      next = nextTracks.next;
-      page++;
+    if (album && tracks.length) {
+      let next = album.tracks.next,
+        page = 1;
+      while (next && (!this.options.playlistPageLimit ? true : page < this.options.playlistPageLimit ?? 1)) {
+        const nextTracks = await this.requestManager.makeRequest<PlaylistTracks>(next ?? '', true);
+        page++;
+        if (nextTracks.items.length) {
+          next = nextTracks.next;
+          tracks.push(
+            ...nextTracks.items
+              .filter(this.filterNullOrUndefined)
+              .filter((a) => a.track)
+              .map((track) => this.buildKazagumoTrack(track.track!, requester, album.images[0]?.url)),
+          );
+        }
+      }
     }
 
     return { tracks, name: album.name };
@@ -148,10 +151,11 @@ export class KazagumoPlugin extends Plugin {
 
   private async getArtist(id: string, requester: unknown): Promise<Result> {
     const artist = await this.requestManager.makeRequest<Artist>(`/artists/${id}`);
-    const fetchedTracks = await this.requestManager.makeRequest<ArtistResult>(`/artists/${id}/top-tracks?market=US`);
+    const fetchedTracks = await this.requestManager.makeRequest<ArtistResult>(
+      `/artists/${id}/top-tracks?market=${this.options.searchMarket ?? 'US'}`,
+    );
 
     const tracks = fetchedTracks.tracks
-      .slice(0, this.options.artistPageLimit ? this.options.artistPageLimit * 50 : 50)
       .filter(this.filterNullOrUndefined)
       .map((track) => this.buildKazagumoTrack(track, requester, artist.images[0]?.url));
 
@@ -159,30 +163,36 @@ export class KazagumoPlugin extends Plugin {
   }
 
   private async getPlaylist(id: string, requester: unknown): Promise<Result> {
-    const playlist = await this.requestManager.makeRequest<PlaylistResult>(`/playlists/${id}`);
+    const playlist = await this.requestManager.makeRequest<PlaylistResult>(
+      `/playlists/${id}?market=${this.options.searchMarket ?? 'US'}`,
+    );
+
     const tracks = playlist.tracks.items
       .filter(this.filterNullOrUndefined)
       .map((track) => this.buildKazagumoTrack(track.track, requester, playlist.images[0]?.url));
-    let next = playlist.tracks.next,
-      page = 1;
 
-    while (next && !this.options.playlistPageLimit ? true : page < (this.options.playlistPageLimit ?? 1)) {
-      if (!next) break;
-      const nextTracks = await this.requestManager.makeRequest<Tracks>(next);
-      tracks.push(
-        ...nextTracks.items
-          .filter(this.filterNullOrUndefined)
-          .map((track) => this.buildKazagumoTrack(track, requester, playlist.images[0]?.url)),
-      );
-      next = nextTracks.next;
-      page++;
+    if (playlist && tracks.length) {
+      let next = playlist.tracks.next,
+        page = 1;
+      while (next && (!this.options.playlistPageLimit ? true : page < this.options.playlistPageLimit ?? 1)) {
+        const nextTracks = await this.requestManager.makeRequest<PlaylistTracks>(next ?? '', true);
+        page++;
+        if (nextTracks.items.length) {
+          next = nextTracks.next;
+          tracks.push(
+            ...nextTracks.items
+              .filter(this.filterNullOrUndefined)
+              .filter((a) => a.track)
+              .map((track) => this.buildKazagumoTrack(track.track!, requester, playlist.images[0]?.url)),
+          );
+        }
+      }
     }
-
     return { tracks, name: playlist.name };
   }
 
   private filterNullOrUndefined(obj: unknown): obj is unknown {
-    return obj !== null && obj !== undefined;
+    return obj !== undefined && obj !== null;
   }
 
   private buildKazagumoTrack(spotifyTrack: Track, requester: unknown, thumbnail?: string) {
@@ -232,6 +242,7 @@ export interface TrackResult {
   name: string;
   popularity: number;
   preview_url: string;
+  track: any;
   track_number: number;
   type: string;
   uri: string;

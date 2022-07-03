@@ -16,11 +16,17 @@ export class RequestManager {
   }
 
   public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
-    await this.renew();
+    if (!this.token) {
+      await this.renew();
+    }
 
-    const request = await fetch(disableBaseUri ? endpoint : `${BASE_URL}${endpoint}`, {
-      headers: { Authorization: this.token },
-    });
+    const request = await fetch(
+      disableBaseUri ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,
+      {
+        headers: { Authorization: this.token },
+      },
+    );
+
     const data = (await request.json()) as Promise<T>;
     return data;
   }

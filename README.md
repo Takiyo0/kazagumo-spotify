@@ -33,7 +33,6 @@ const kazagumo = new Kazagumo(
         clientSecret: '',
         playlistPageLimit: 1, // optional ( 100 tracks per page )
         albumPageLimit: 1, // optional ( 50 tracks per page )
-        artistPageLimit: 1, // optional ( 50 tracks per page )
         searchLimit: 10, // optional ( track search limit. Max 50 )
         searchMarket: 'US', // optional || default: US ( Enter the country you live in. [ Can only be of 2 letters. For eg: US, IN, EN ] )//
       }),
