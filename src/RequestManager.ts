@@ -16,9 +16,7 @@ export class RequestManager {
   }
 
   public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
-    if (!this.token) {
-      await this.renew();
-    }
+    await this.renew();
 
     const request = await fetch(
       disableBaseUri ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,
@@ -48,7 +46,7 @@ export class RequestManager {
     if (!access_token) throw new KazagumoError(3, 'Failed to get access token due to invalid spotify client');
 
     this.token = `Bearer ${access_token}`;
-    this.nextRenew = expires_in * 1000;
+    this.nextRenew = Date.now() + expires_in * 1000;
   }
 
   private async renew(): Promise<void> {
