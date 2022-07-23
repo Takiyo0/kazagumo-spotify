@@ -129,8 +129,9 @@ export class KazagumoPlugin extends Plugin {
       .map((track) => this.buildKazagumoTrack(track, requester, album.images[0]?.url));
 
     if (album && tracks.length) {
-      let next = album.tracks.next,
-        page = 1;
+      let next = album.tracks.next;
+      let page = 1;
+
       while (next && (!this.options.playlistPageLimit ? true : page < this.options.playlistPageLimit ?? 1)) {
         const nextTracks = await this.requestManager.makeRequest<PlaylistTracks>(next ?? '', true);
         page++;
@@ -172,8 +173,8 @@ export class KazagumoPlugin extends Plugin {
       .map((track) => this.buildKazagumoTrack(track.track, requester, playlist.images[0]?.url));
 
     if (playlist && tracks.length) {
-      let next = playlist.tracks.next,
-        page = 1;
+      let next = playlist.tracks.next;
+      let page = 1;
       while (next && (!this.options.playlistPageLimit ? true : page < this.options.playlistPageLimit ?? 1)) {
         const nextTracks = await this.requestManager.makeRequest<PlaylistTracks>(next ?? '', true);
         page++;
