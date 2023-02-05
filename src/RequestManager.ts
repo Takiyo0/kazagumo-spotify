@@ -1,57 +1,43 @@
-import { fetch } from 'undici';
 import { SpotifyOptions } from './Plugin';
+import { SpotifyRequest } from './SpotifyRequest';
 import { KazagumoError } from 'kazagumo';
 
-const BASE_URL = 'https://api.spotify.com/v1';
-
 export class RequestManager {
-  private token: string = '';
-  private authorization: string = '';
-  private nextRenew: number = 0;
+  private requests: SpotifyRequest[] = [];
+  private readonly mode: 'single' | 'multi' = 'single';
 
   constructor(private options: SpotifyOptions) {
-    this.authorization = `Basic ${Buffer.from(`${this.options.clientId}:${this.options.clientSecret}`).toString(
-      'base64',
-    )}`;
-  }
-
-  public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
-    await this.renew();
-
-    const request = await fetch(
-      disableBaseUri ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,
-      {
-        headers: { Authorization: this.token },
-      },
-    );
-
-    const data = (await request.json()) as Promise<T>;
-    return data;
-  }
-
-  private async renewToken(): Promise<void> {
-    const res = await fetch('https://accounts.spotify.com/api/token?grant_type=client_credentials', {
-      method: 'POST',
-      headers: {
-        Authorization: this.authorization,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-
-    const { access_token, expires_in } = (await res.json()) as {
-      access_token?: string;
-      expires_in: number;
-    };
-
-    if (!access_token) throw new KazagumoError(3, 'Failed to get access token due to invalid spotify client');
-
-    this.token = `Bearer ${access_token}`;
-    this.nextRenew = Date.now() + expires_in * 1000;
-  }
-
-  private async renew(): Promise<void> {
-    if (Date.now() >= this.nextRenew) {
-      await this.renewToken();
+    if (options.clients?.length) {
+      for (const client of options.clients) this.requests.push(new SpotifyRequest(client));
+      this.mode = 'multi';
+      // tslint:disable-next-line:no-console
+      console.warn(
+        '\x1b[31m%s\x1b[0m',
+        "You are using the multi client mode, sometimes you can STILL GET RATE LIMITED. I'm not responsible for any IP BANS.",
+      );
+    } else {
+      this.requests.push(new SpotifyRequest({ clientId: options.clientId, clientSecret: options.clientSecret }));
     }
+  }
+
+  public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false, tries: number = 3): Promise<T> {
+    if (this.mode === 'single') return this.requests[0].makeRequest<T>(endpoint, disableBaseUri);
+
+    const targetRequest = this.getLeastUsedRequest();
+    if (!targetRequest) throw new KazagumoError(4, 'No available requests [ALL_RATE_LIMITED]');
+    return targetRequest
+      .makeRequest<T>(endpoint, disableBaseUri)
+      .catch((e) =>
+        e.message === 'Rate limited by spotify' && tries
+          ? this.makeRequest<T>(endpoint, disableBaseUri, tries - 1)
+          : Promise.reject(e),
+      );
+  }
+
+  protected getLeastUsedRequest(): SpotifyRequest | undefined {
+    const targetSearch = this.requests.filter((request) => !request.stats.rateLimited);
+    if (!targetSearch.length) return undefined;
+
+    return targetSearch.sort((a, b) => a.stats.requests - b.stats.requests)[0];
   }
 }

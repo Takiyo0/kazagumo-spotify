@@ -16,6 +16,8 @@ export interface SpotifyOptions {
   clientId: string;
   /** The client secret of your Spotify application. */
   clientSecret: string;
+  /** The clients for multiple spotify applications. NOT RECOMMENDED */
+  clients?: { clientId: string; clientSecret: string }[];
   /** 100 tracks per page */
   playlistPageLimit?: number;
   /** 50 tracks per page */
@@ -306,6 +308,7 @@ export interface Followers {
   href: string | null;
   total: number;
 }
+
 export interface Tracks {
   href: string;
   items: Track[];
