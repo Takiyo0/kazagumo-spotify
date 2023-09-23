@@ -11,9 +11,7 @@ export class SpotifyRequest {
   public stats: { requests: number; rateLimited: boolean } = { requests: 0, rateLimited: false };
 
   constructor(private client: { clientId: string; clientSecret: string }) {
-    this.authorization = `Basic ${Buffer.from(`${this.client.clientId}:${this.client.clientSecret}`).toString(
-      'base64',
-    )}`;
+    this.authorization = `&client_id=${this.client.clientId}&client_secret=${this.client.clientSecret}`;
   }
 
   public async makeRequest<T>(endpoint: string, disableBaseUri: boolean = false): Promise<T> {
@@ -45,10 +43,11 @@ export class SpotifyRequest {
   }
 
   private async renewToken(): Promise<void> {
-    const res = await fetch('https://accounts.spotify.com/api/token?grant_type=client_credentials', {
+    const res = 
+    await fetch(`https://accounts.spotify.com/api/token?grant_type=client_credentials${this.authorization}`, {
       method: 'POST',
       headers: {
-        Authorization: this.authorization,
+        // Authorization: this.authorization,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
