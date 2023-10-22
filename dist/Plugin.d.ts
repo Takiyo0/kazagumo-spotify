@@ -23,6 +23,7 @@ export declare class KazagumoPlugin extends Plugin {
      * The options of the plugin.
      */
     options: SpotifyOptions;
+    private undici;
     private _search;
     private token;
     private kazagumo;

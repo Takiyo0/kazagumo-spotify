@@ -8,17 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KazagumoPlugin = void 0;
 const kazagumo_1 = require("kazagumo");
 const RequestManager_1 = require("./RequestManager");
+const undici_1 = __importDefault(require("undici"));
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|album|artist)[\/:]([A-Za-z0-9]+)/;
+const SHORT_REGEX = /(?:https:\/\/spotify\.link)\/([A-Za-z0-9]+)/;
 class KazagumoPlugin extends kazagumo_1.KazagumoPlugin {
     constructor(spotifyOptions) {
         super();
+        this.undici = undici_1.default;
         this.token = '';
         this.options = spotifyOptions;
         this.requestManager = new RequestManager_1.RequestManager(spotifyOptions);
+        this.undici = undici_1.default;
         this.methods = {
             track: this.getTrack.bind(this),
             album: this.getAlbum.bind(this),
@@ -42,6 +49,10 @@ class KazagumoPlugin extends kazagumo_1.KazagumoPlugin {
                 throw new kazagumo_1.KazagumoError(3, 'Query is required');
             const [, type, id] = REGEX.exec(query) || [];
             const isUrl = /^https?:\/\//.test(query);
+            if (SHORT_REGEX.test(query)) {
+                const res = yield this.undici.request(query, { method: 'HEAD' });
+                query = String(res.headers['location']);
+            }
             if (type in this.methods) {
                 try {
                     const _function = this.methods[type];
