@@ -24,7 +24,7 @@ String; `mirror heart`
 
 ```js
 const { Kazagumo } = require('kazagumo');
-const Spotify = require('kazagumo-spotify');
+const Spotify = require('better-kazagumo-spotify');
 
 const kazagumo = new Kazagumo(
   {
