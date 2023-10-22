@@ -47,12 +47,12 @@ class KazagumoPlugin extends kazagumo_1.KazagumoPlugin {
                 throw new kazagumo_1.KazagumoError(1, 'kazagumo-spotify is not loaded yet.');
             if (!query)
                 throw new kazagumo_1.KazagumoError(3, 'Query is required');
-            const [, type, id] = REGEX.exec(query) || [];
             const isUrl = /^https?:\/\//.test(query);
             if (SHORT_REGEX.test(query)) {
                 const res = yield this.undici.request(query, { method: 'HEAD' });
-                query = String(res.headers['location']);
+                query = String(res.headers.location);
             }
+            const [, type, id] = REGEX.exec(query) || [];
             if (type in this.methods) {
                 try {
                     const _function = this.methods[type];
