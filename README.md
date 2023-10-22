@@ -8,6 +8,7 @@ Track link; `https://open.spotify.com/track/7nw4ElerVAP5235FN5D2OI`
 Playlist link; `https://open.spotify.com/playlist/2gzszlY4WeJOTOUU6x3sgA`  
 Album link; `https://open.spotify.com/album/18UoCkfQKlMVnAcZXbiBz8`  
 Artist link; `https://open.spotify.com/artist/64tJ2EAv1R6UaZqc4iOCyj?si=mxc5IMM9RQeEPmY0KBIfjg`  
+Short link; `https://spotify.link/zu1pVRAg6Db`
 String; `mirror heart`
 
 ## Installation
