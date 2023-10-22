@@ -70,14 +70,15 @@ export class KazagumoPlugin extends Plugin {
     if (!this.kazagumo || !this._search) throw new KazagumoError(1, 'kazagumo-spotify is not loaded yet.');
 
     if (!query) throw new KazagumoError(3, 'Query is required');
-    const [, type, id] = REGEX.exec(query) || [];
 
     const isUrl = /^https?:\/\//.test(query);
 
     if (SHORT_REGEX.test(query)) {
       const res = await this.undici.request(query, { method: 'HEAD' });
-      query = String(res.headers['location']);
+      query = String(res.headers.location);
     }
+
+    const [, type, id] = REGEX.exec(query) || [];
 
     if (type in this.methods) {
       try {
