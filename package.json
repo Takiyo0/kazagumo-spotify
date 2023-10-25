@@ -1,5 +1,5 @@
 {
-  "name": "better-kazagumo-spotify",
+  "name": "kazagumo-spotify",
   "version": "1.2.5",
   "description": "A spotify module for kazagumo",
   "main": "dist/Index.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RainyXeon/better-kazagumo-spotify.git"
+    "url": "git+https://github.com/Takiyo0/kazagumo-spotify.git"
   },
   "keywords": [
     "spotify",
@@ -31,9 +31,9 @@
   "author": "RainyXeon",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RainyXeon/better-kazagumo-spotify/issues"
+    "url": "https://github.com/Takiyo0/kazagumo-spotify/issues"
   },
-  "homepage": "https://github.com/RainyXeon/better-kazagumo-spotify#readme",
+  "homepage": "https://github.com/Takiyo0/kazagumo-spotify#readme",
   "dependencies": {
     "kazagumo": "^2.1.6",
     "undici": "^5.5.1"
