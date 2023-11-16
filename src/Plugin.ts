@@ -8,8 +8,11 @@ import {
   SearchResultTypes,
 } from 'kazagumo';
 import { RequestManager } from './RequestManager';
+import undici from 'undici';
+
 
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|album|artist)[\/:]([A-Za-z0-9]+)/;
+const SHORT_REGEX = /(?:https:\/\/spotify\.link)\/([A-Za-z0-9]+)/;
 
 export interface SpotifyOptions {
   /** The client ID of your Spotify application. */
@@ -37,6 +40,7 @@ export class KazagumoPlugin extends Plugin {
   private _search: ((query: string, options?: KazagumoSearchOptions) => Promise<KazagumoSearchResult>) | null;
   private token: string = '';
   private kazagumo: Kazagumo | null;
+  private undici = undici;
 
   private readonly methods: Record<string, (id: string, requester: unknown) => Promise<Result>>;
   private requestManager: RequestManager;
@@ -69,6 +73,12 @@ export class KazagumoPlugin extends Plugin {
     const [, type, id] = REGEX.exec(query) || [];
 
     const isUrl = /^https?:\/\//.test(query);
+
+    if (SHORT_REGEX.test(query)) {
+      const res = await this.undici.request(query, { method: 'HEAD' });
+      query = String(res.headers.location);
+    }
+
 
     if (type in this.methods) {
       try {
