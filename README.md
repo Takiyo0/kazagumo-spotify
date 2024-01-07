@@ -9,6 +9,7 @@
 - [x] Album link; `https://open.spotify.com/album/18UoCkfQKlMVnAcZXbiBz8`  
 - [x] Artist link; `https://open.spotify.com/artist/64tJ2EAv1R6UaZqc4iOCyj?si=mxc5IMM9RQeEPmY0KBIfjg`
 - [x] Short link; `https://spotify.link/zu1pVRAg6Db`
+- [x] ISRC: `TCJPN2165580`
 - [x] String; `mirror heart`
 
 ### ⚠️ This latest plugin (v2) is for kazagumo v3. If you use kazagumo v2, do `npm i kazagumo-spotify@1.2.1`
