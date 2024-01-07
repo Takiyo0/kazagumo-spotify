@@ -1,18 +1,18 @@
 import {
+  Kazagumo,
+  KazagumoError,
   KazagumoPlugin as Plugin,
   KazagumoSearchOptions,
   KazagumoSearchResult,
-  Kazagumo,
-  KazagumoError,
   KazagumoTrack,
   SearchResultTypes,
 } from 'kazagumo';
 import { RequestManager } from './RequestManager';
 import undici from 'undici';
 
-
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|album|artist)[\/:]([A-Za-z0-9]+)/;
 const SHORT_REGEX = /(?:https:\/\/spotify\.link)\/([A-Za-z0-9]+)/;
+const ISRC_REGEX = /^[A-Z]{2}-?\w{3}-?\d{2}-?\d{5}$/;
 
 export interface SpotifyOptions {
   /** The client ID of your Spotify application. */
@@ -78,7 +78,13 @@ export class KazagumoPlugin extends Plugin {
       const res = await this.undici.request(query, { method: 'HEAD' });
       query = String(res.headers.location);
     }
-
+    if (ISRC_REGEX.test(query)) {
+      const res = await this.searchTrack(`isrc:${query}`, options?.requester);
+      const a = this.buildSearch(undefined, res.tracks, 'TRACK');
+      // tslint:disable-next-line:no-console
+      console.log(a);
+      return a;
+    }
 
     if (type in this.methods) {
       try {
@@ -170,7 +176,7 @@ export class KazagumoPlugin extends Plugin {
 
     const tracks = fetchedTracks.tracks
       .filter(this.filterNullOrUndefined)
-      .map((track) => this.buildKazagumoTrack(track, requester, artist.images[0]?.url));
+      .map((track) => this.buildKazagumoTrack(track, requester));
 
     return { tracks, name: artist.name };
   }
@@ -182,7 +188,7 @@ export class KazagumoPlugin extends Plugin {
 
     const tracks = playlist.tracks.items
       .filter(this.filterNullOrUndefined)
-      .map((track) => this.buildKazagumoTrack(track.track, requester, playlist.images[0]?.url));
+      .map((track) => this.buildKazagumoTrack(track.track, requester));
 
     if (playlist && tracks.length) {
       let next = playlist.tracks.next;
@@ -196,7 +202,7 @@ export class KazagumoPlugin extends Plugin {
             ...nextTracks.items
               .filter(this.filterNullOrUndefined)
               .filter((a) => a.track)
-              .map((track) => this.buildKazagumoTrack(track.track!, requester, playlist.images[0]?.url)),
+              .map((track) => this.buildKazagumoTrack(track.track!, requester)),
           );
         }
       }
@@ -211,7 +217,10 @@ export class KazagumoPlugin extends Plugin {
   private buildKazagumoTrack(spotifyTrack: Track, requester: unknown, thumbnail?: string) {
     return new KazagumoTrack(
       {
-        track: '',
+        encoded: '',
+        pluginInfo: {
+          name: 'kazagumo@kazagumo-spotify',
+        },
         info: {
           sourceName: 'spotify',
           identifier: spotifyTrack.id,
@@ -222,11 +231,11 @@ export class KazagumoPlugin extends Plugin {
           position: 0,
           title: spotifyTrack.name,
           uri: `https://open.spotify.com/track/${spotifyTrack.id}`,
-          thumbnail: thumbnail ? thumbnail : spotifyTrack.album?.images[0]?.url,
+          artworkUrl: thumbnail ? thumbnail : spotifyTrack.album?.images[0]?.url,
         },
       },
       requester,
-    );
+    ).setKazagumo(this.kazagumo!);
   }
 }
 
