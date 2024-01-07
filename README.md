@@ -11,6 +11,7 @@
 - [x] Short link; `https://spotify.link/zu1pVRAg6Db`
 - [x] String; `mirror heart`
 
+### ⚠️ This latest plugin (v2) is for kazagumo v3. If you use kazagumo v2, do `npm i kazagumo-spotify@1.2.1`
 ## Installation
 
 > npm i kazagumo-spotify
