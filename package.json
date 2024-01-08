@@ -1,6 +1,6 @@
 {
   "name": "kazagumo-spotify",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A spotify module for kazagumo",
   "main": "dist/Index.js",
   "types": "dist/Index.d.ts",
@@ -36,7 +36,7 @@
   "homepage": "https://github.com/Takiyo0/Kazagumo-spotify#readme",
   "dependencies": {
     "kazagumo": "^3.0.0",
-    "shoukaku": "^3.2.2",
+    "shoukaku": "^4.0.1",
     "undici": "^5.5.1"
   },
   "devDependencies": {
