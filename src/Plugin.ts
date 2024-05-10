@@ -81,13 +81,13 @@ export class KazagumoPlugin extends Plugin {
     if (ISRC_REGEX.test(query)) {
       const res = await this.searchTrack(`isrc:${query}`, options?.requester);
       const a = this.buildSearch(undefined, res.tracks, 'TRACK');
-      // tslint:disable-next-line:no-console
-      console.log(a);
       return a;
     }
 
     if (type in this.methods) {
       try {
+        const lavalinkResult = await this._search(query, options);
+        if (lavalinkResult.tracks.length > 0) return lavalinkResult;
         const _function = this.methods[type];
         const result: Result = await _function(id, options?.requester);
 
