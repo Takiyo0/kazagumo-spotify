@@ -29,6 +29,8 @@ export interface SpotifyOptions {
   searchLimit?: number;
   /** Enter the country you live in. ( Can only be of 2 letters. For eg: US, IN, EN) */
   searchMarket?: string;
+  /** The number of tries to search for a track via lavalink (defaults to 2). This is to prevent Unknown file format. error in lavalink when you're not using lavasrc, etc. */
+  lavalinkPluginTries?: number;
 }
 
 export class KazagumoPlugin extends Plugin {
@@ -41,6 +43,7 @@ export class KazagumoPlugin extends Plugin {
   private token: string = '';
   private kazagumo: Kazagumo | null;
   private undici = undici;
+  private triesLeft = 2;
 
   private readonly methods: Record<string, (id: string, requester: unknown) => Promise<Result>>;
   private requestManager: RequestManager;
@@ -49,6 +52,8 @@ export class KazagumoPlugin extends Plugin {
     super();
     this.options = spotifyOptions;
     this.requestManager = new RequestManager(spotifyOptions);
+
+    if (spotifyOptions.lavalinkPluginTries !== undefined) this.triesLeft = spotifyOptions.lavalinkPluginTries;
 
     this.methods = {
       track: this.getTrack.bind(this),
@@ -86,8 +91,11 @@ export class KazagumoPlugin extends Plugin {
 
     if (type in this.methods) {
       try {
-        const lavalinkResult = await this._search(query, options);
-        if (lavalinkResult.tracks.length > 0) return lavalinkResult;
+        if (this.triesLeft > 0) {
+          const lavalinkResult = await this._search(query, options);
+          if (lavalinkResult.tracks.length > 0) return lavalinkResult;
+          this.triesLeft--;
+        }
         const _function = this.methods[type];
         const result: Result = await _function(id, options?.requester);
 
