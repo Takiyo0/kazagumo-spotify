@@ -166,7 +166,7 @@ export class KazagumoPlugin extends Plugin {
           next = nextTracks.next;
           tracks.push(
             ...nextTracks.items
-              .filter(this.filterNullOrUndefined)
+              .filter(this.filterTrackNullOrUndefined)
               .filter((a) => a.track)
               .map((track) => this.buildKazagumoTrack(track.track!, requester, album.images[0]?.url)),
           );
@@ -196,7 +196,7 @@ export class KazagumoPlugin extends Plugin {
     );
 
     const tracks = playlist.tracks.items
-      .filter(this.filterNullOrUndefined)
+      .filter(this.filterTrackNullOrUndefined)
       .map((track) => this.buildKazagumoTrack(track.track, requester));
 
     if (playlist && tracks.length) {
@@ -209,7 +209,7 @@ export class KazagumoPlugin extends Plugin {
           next = nextTracks.next;
           tracks.push(
             ...nextTracks.items
-              .filter(this.filterNullOrUndefined)
+              .filter(this.filterTrackNullOrUndefined)
               .filter((a) => a.track)
               .map((track) => this.buildKazagumoTrack(track.track!, requester)),
           );
@@ -221,6 +221,10 @@ export class KazagumoPlugin extends Plugin {
 
   private filterNullOrUndefined(obj: unknown): obj is unknown {
     return obj !== undefined && obj !== null;
+  }
+
+  private filterTrackNullOrUndefined(obj: any): obj is unknown {
+    return obj !== undefined && obj !== null && obj.track;
   }
 
   private buildKazagumoTrack(spotifyTrack: Track, requester: unknown, thumbnail?: string) {
