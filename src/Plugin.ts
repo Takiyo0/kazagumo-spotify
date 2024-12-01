@@ -75,7 +75,7 @@ export class KazagumoPlugin extends Plugin {
     if (!this.kazagumo || !this._search) throw new KazagumoError(1, 'kazagumo-spotify is not loaded yet.');
 
     if (!query) throw new KazagumoError(3, 'Query is required');
-    const [, type, id] = REGEX.exec(query) || [];
+    let [, type, id] = REGEX.exec(query) || [];
 
     const isUrl = /^https?:\/\//.test(query);
 
@@ -83,6 +83,7 @@ export class KazagumoPlugin extends Plugin {
       const res = await this.undici.request(query, { method: 'HEAD' });
       query = String(res.headers.location);
     }
+    (REGEX.exec(query) || []).map((_, i) => (i === 1 ? (type = _) : i === 2 ? (id = _) : null));
     if (ISRC_REGEX.test(query)) {
       const res = await this.searchTrack(`isrc:${query}`, options?.requester);
       const a = this.buildSearch(undefined, res.tracks, 'TRACK');
